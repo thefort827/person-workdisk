@@ -12,19 +12,20 @@ module.exports = async function handler(req, res) {
     const authed = checkAuth(req);
     const needToken = Boolean((process.env.APP_TOKEN || '').trim());
 
-    // 探测数据库是否已初始化：拉取各表是否存在
-    const tables = [];
-    let dbReady = true;
-    for (const t of TABLE_NAMES) {
-      try {
-        const col = t === 'app_settings' ? 'key' : 'id';
-        await sbFetch(`/rest/v1/${t}?select=${col}&limit=1`);
-        tables.push({ name: t, ok: true });
-      } catch (err) {
-        dbReady = false;
-        tables.push({ name: t, ok: false, error: err.message });
-      }
-    }
+    // 探测数据库是否已初始化：并行拉取各表是否存在（串行会拖慢函数，逼近超时上限）
+    const results = await Promise.all(
+      TABLE_NAMES.map(async (t) => {
+        try {
+          const col = t === 'app_settings' ? 'key' : 'id';
+          await sbFetch(`/rest/v1/${t}?select=${col}&limit=1`);
+          return { name: t, ok: true };
+        } catch (err) {
+          return { name: t, ok: false, error: err.message };
+        }
+      })
+    );
+    const tables = results;
+    const dbReady = results.every((r) => r.ok);
 
     return sendJson(res, 200, {
       ok: true,
