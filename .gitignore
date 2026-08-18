@@ -1,0 +1,27 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.vite/
+
+# 环境变量（含密钥，严禁提交）
+.env
+.env.local
+.env.*.local
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 本地数据与日志
+*.log
+npm-debug.log*
+
+# Vercel
+.vercel/
+
+# 开发/测试产物
+scripts/.smoke-tmp/
+.npm-cache/
+scripts/node_modules/

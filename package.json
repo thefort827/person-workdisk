@@ -1,0 +1,15 @@
+{
+  "name": "person-workdisk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "财务工程师个人工作台 - BI 风格财务管理平台（Supabase + Vercel Serverless）",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

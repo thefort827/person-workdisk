@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="财务工程师个人工作台 - BI 风格财务管理工作平台">
+<title>财务工程师工作台 · BI 财务平台</title>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💼</text></svg>">
+</head>
+<body>
+
+<!-- 背景装饰层 -->
+<div class="bg-orbs" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="grid-overlay"></div>
+</div>
+
+<!-- 移动端顶栏 -->
+<header class="mobile-topbar" id="mobileTopbar">
+  <button class="icon-btn" id="mobMenuBtn" aria-label="打开菜单">☰</button>
+  <span class="mobile-title">💼 财务工程师工作台</span>
+  <span class="conn-dot" id="mobConnDot" title="连接状态"></span>
+</header>
+
+<!-- 侧边栏 -->
+<aside class="sidebar" id="sideBar">
+  <div class="sidebar-head">
+    <div class="logo-mark">💼</div>
+    <div class="logo-text">
+      <strong>财务工程师工作台</strong>
+      <span>Finance Workbench</span>
+    </div>
+  </div>
+  <nav class="side-nav" id="sideNav">
+    <div class="nav-group">工作台</div>
+    <button class="nav-btn" data-page="dashboard"><span class="nav-ic">📊</span><span class="nav-tx">智能首页 · BI 看板</span></button>
+    <button class="nav-btn" data-page="report"><span class="nav-ic">📈</span><span class="nav-tx">报表中心</span></button>
+    <div class="nav-group">财务管理</div>
+    <button class="nav-btn" data-page="fintodo"><span class="nav-ic">📋</span><span class="nav-tx">财务专项待办</span></button>
+    <button class="nav-btn" data-page="invoice"><span class="nav-ic">🧾</span><span class="nav-tx">票据台账</span></button>
+    <button class="nav-btn" data-page="fund"><span class="nav-ic">💰</span><span class="nav-tx">往来资金预警</span></button>
+    <button class="nav-btn" data-page="close"><span class="nav-ic">📆</span><span class="nav-tx">月末结账</span></button>
+    <button class="nav-btn" data-page="tax"><span class="nav-ic">📑</span><span class="nav-tx">税务管理</span></button>
+    <div class="nav-group">学习成长</div>
+    <button class="nav-btn" data-page="knowledge"><span class="nav-ic">📚</span><span class="nav-tx">财务知识库</span></button>
+    <button class="nav-btn" data-page="study"><span class="nav-ic">📖</span><span class="nav-tx">CPA 备考系统</span></button>
+    <button class="nav-btn" data-page="checkin"><span class="nav-ic">🔥</span><span class="nav-tx">习惯打卡</span></button>
+    <button class="nav-btn" data-page="todo"><span class="nav-ic">✅</span><span class="nav-tx">日常待办</span></button>
+    <button class="nav-btn" data-page="weekreview"><span class="nav-ic">📝</span><span class="nav-tx">周复盘</span></button>
+    <button class="nav-btn" data-page="monthreview"><span class="nav-ic">🗓</span><span class="nav-tx">月复盘</span></button>
+    <div class="nav-group">系统</div>
+    <button class="nav-btn" data-page="settings"><span class="nav-ic">⚙️</span><span class="nav-tx">设置 · 备份</span></button>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="conn-row" id="connStatus">
+      <span class="conn-dot" id="connDot"></span>
+      <span id="connText">连接检测中…</span>
+    </div>
+    <p class="tip-warning">⚠️ 仅供个人备忘使用，请勿录入企业涉密数据</p>
+  </div>
+</aside>
+
+<!-- 遮罩（移动端抽屉） -->
+<div class="drawer-mask" id="drawerMask"></div>
+
+<!-- 主区域 -->
+<main class="main">
+  <div class="page-head" id="pageHead">
+    <div>
+      <h1 id="pageTitle">智能首页 · BI 看板</h1>
+      <p id="pageSub" class="page-sub">财务工程师个人工作平台</p>
+    </div>
+    <div class="page-head-right">
+      <div class="clock-box">
+        <div id="clockTime">--:--:--</div>
+        <div id="clockDate">----年--月--日</div>
+      </div>
+      <button class="btn btn-primary" id="quickAddBtn">＋ 快速新增</button>
+    </div>
+  </div>
+  <div id="app" class="page-container">
+    <div class="skeleton-page">
+      <div class="skeleton-card"></div><div class="skeleton-card"></div>
+      <div class="skeleton-card tall"></div><div class="skeleton-card tall"></div>
+    </div>
+  </div>
+</main>
+
+<!-- 口令锁屏 -->
+<div class="lock-screen hidden" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-ic">🔒</div>
+    <h2>工作台已加锁</h2>
+    <p>请输入访问口令以继续使用</p>
+    <input type="password" class="input" id="lockInput" placeholder="访问口令" autocomplete="off">
+    <button class="btn btn-primary btn-block" id="lockBtn">解锁</button>
+    <p class="lock-err" id="lockErr"></p>
+  </div>
+</div>
+
+<!-- 数据库未初始化 -->
+<div class="lock-screen hidden" id="initScreen">
+  <div class="lock-card">
+    <div class="lock-ic">🗄️</div>
+    <h2>数据库尚未初始化</h2>
+    <p>需要在 Supabase 控制台执行一次建表脚本</p>
+    <ol class="init-steps">
+      <li>打开 <code>supabase/schema.sql</code> 文件</li>
+      <li>登录 <b>Supabase 控制台 → SQL Editor</b></li>
+      <li>粘贴全部内容并点击 <b>Run</b> 执行</li>
+    </ol>
+    <div class="action-bar center">
+      <button class="btn btn-primary" id="copySqlBtn">📋 复制建表脚本</button>
+      <button class="btn btn-outline" id="retryInitBtn">🔄 我已执行，重新检测</button>
+    </div>
+    <p class="lock-err" id="initErr"></p>
+  </div>
+</div>
+
+<!-- 后端不可用 -->
+<div class="lock-screen hidden" id="errScreen">
+  <div class="lock-card">
+    <div class="lock-ic">🛑</div>
+    <h2>后端服务不可用</h2>
+    <p id="errMsg">无法连接到 API 服务</p>
+    <div class="action-bar center">
+      <button class="btn btn-primary" id="retryErrBtn">🔄 重新连接</button>
+    </div>
+    <p class="lock-err" id="errDetail"></p>
+  </div>
+</div>
+
+<!-- 通用弹窗 -->
+<div class="modal-mask hidden" id="modalMask">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<!-- 轻提示 -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="/vendor/chart.umd.min.js"></script>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

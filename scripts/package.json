@@ -1,0 +1,1 @@
+{"name":"migrate","private":true,"type":"commonjs","dependencies":{"jsdom":"^24.1.3","pg":"^8.13.1"}}
