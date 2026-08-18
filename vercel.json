@@ -10,8 +10,5 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
-  ],
-  "functions": {
-    "api/index.js": { "maxDuration": 30 }
-  }
+  ]
 }
