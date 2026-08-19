@@ -2,38 +2,39 @@
  * 图表封装：Chart.js 深色主题默认值 + 便捷创建
  */
 
-// 统一配色
+// 统一配色（小清新马卡龙）
 export const PALETTE = {
-  accent: '#6d8bff',
-  accent2: '#9b6bff',
-  green: '#34e2a0',
-  red: '#ff5d6e',
-  orange: '#ffa04d',
-  yellow: '#ffd24d',
-  cyan: '#42d6ff',
-  pink: '#f07fb8',
-  purple: '#b18cff',
-  slate: 'rgba(255,255,255,0.22)',
+  accent: '#4dd6a8',
+  accent2: '#4aa8f0',
+  green: '#4cd1a0',
+  red: '#ff7b8a',
+  orange: '#ffb35c',
+  yellow: '#f3c948',
+  cyan: '#5fd3d3',
+  pink: '#f0a6c8',
+  purple: '#9d8cff',
+  slate: 'rgba(80,130,120,0.35)',
 };
 
-export const SERIES = ['#6d8bff', '#42d6ff', '#34e2a0', '#ffa04d', '#ffd24d', '#ff5d6e', '#9b6bff', '#f07fb8', '#b18cff', '#6fe3dd'];
+export const SERIES = ['#4dd6a8', '#5aa9f5', '#ffb35c', '#ff8fa3', '#9d8cff', '#f3c948', '#5fd3d3', '#f0a6c8', '#a3d977', '#7fc4f0'];
 
 export function initChartDefaults() {
   if (typeof Chart === 'undefined') return;
-  Chart.defaults.color = '#9aa3c7';
-  Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+  Chart.defaults.color = '#7d92a8';
+  Chart.defaults.borderColor = 'rgba(80,130,120,0.14)';
   Chart.defaults.font.family = '"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif';
   Chart.defaults.font.size = 11.5;
   Chart.defaults.plugins.legend.labels.usePointStyle = true;
   Chart.defaults.plugins.legend.labels.boxWidth = 8;
   Chart.defaults.plugins.legend.labels.boxHeight = 8;
   Chart.defaults.plugins.legend.labels.padding = 14;
-  Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(14,18,38,0.95)';
-  Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.14)';
+  Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(255,255,255,0.98)';
+  Chart.defaults.plugins.tooltip.borderColor = 'rgba(80,130,120,0.2)';
   Chart.defaults.plugins.tooltip.borderWidth = 1;
   Chart.defaults.plugins.tooltip.padding = 10;
   Chart.defaults.plugins.tooltip.cornerRadius = 8;
-  Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
+  Chart.defaults.plugins.tooltip.titleColor = '#34475c';
+  Chart.defaults.plugins.tooltip.bodyColor = '#5c6f84';
   Chart.defaults.plugins.tooltip.titleFont = { weight: '700' };
   Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
   Chart.defaults.plugins.tooltip.boxPadding = 4;

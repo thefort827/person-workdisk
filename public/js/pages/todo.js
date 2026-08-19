@@ -71,7 +71,7 @@ export const todoPage = {
         item.innerHTML = `
           <div class="item-main" style="align-items:center;">
             <label class="flex" style="flex:1;min-width:0;cursor:pointer;gap:11px;">
-              <input type="checkbox" class="todo-chk" ${row.done ? 'checked' : ''} data-i="${idx}" style="width:17px;height:17px;accent-color:#2fd99a;cursor:pointer;">
+              <input type="checkbox" class="todo-chk" ${row.done ? 'checked' : ''} data-i="${idx}" style="width:17px;height:17px;accent-color:#4cd1a0;cursor:pointer;">
               <span class="ellipsis" style="${row.done ? 'text-decoration:line-through;color:var(--text-faint);' : ''}">${esc(row.text)}</span>
               <span class="tag ${priCls[row.priority] || 'tag-low'}">${priLabel[row.priority] || row.priority}</span>
             </label>

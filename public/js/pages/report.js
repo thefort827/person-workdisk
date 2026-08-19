@@ -145,10 +145,10 @@ function renderCharts(dom, d) {
     data: {
       labels: monthly.map((m) => m.month),
       datasets: [
-        { label: '票据金额', data: monthly.map((m) => m.invAmount), backgroundColor: 'rgba(91,120,255,0.55)', borderRadius: 5, barPercentage: 0.5, yAxisID: 'y' },
-        { label: '应收到期', data: monthly.map((m) => m.receivable), backgroundColor: 'rgba(49,198,232,0.5)', borderRadius: 5, barPercentage: 0.5, yAxisID: 'y' },
-        { label: '应付到期', data: monthly.map((m) => m.payable), backgroundColor: 'rgba(255,155,66,0.55)', borderRadius: 5, barPercentage: 0.5, yAxisID: 'y' },
-        { label: '完成任务', type: 'line', data: monthly.map((m) => m.doneCount), borderColor: '#2fd99a', backgroundColor: '#2fd99a', tension: 0.4, pointRadius: 4, yAxisID: 'y1' },
+        { label: '票据金额', data: monthly.map((m) => m.invAmount), backgroundColor: 'rgba(90,169,245,0.6)', borderRadius: 5, barPercentage: 0.5, yAxisID: 'y' },
+        { label: '应收到期', data: monthly.map((m) => m.receivable), backgroundColor: 'rgba(95,211,211,0.6)', borderRadius: 5, barPercentage: 0.5, yAxisID: 'y' },
+        { label: '应付到期', data: monthly.map((m) => m.payable), backgroundColor: 'rgba(255,179,92,0.65)', borderRadius: 5, barPercentage: 0.5, yAxisID: 'y' },
+        { label: '完成任务', type: 'line', data: monthly.map((m) => m.doneCount), borderColor: '#4cd1a0', backgroundColor: '#4cd1a0', tension: 0.4, pointRadius: 4, yAxisID: 'y1' },
       ],
     },
     options: baseOptions({
@@ -156,7 +156,7 @@ function renderCharts(dom, d) {
       scales: {
         x: { stacked: false, ...axisGrid() },
         y: { beginAtZero: true, ...axisGrid(), ticks: { callback: (v) => moneyFmt(v) } },
-        y1: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { precision: 0, color: '#2fd99a' } },
+        y1: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { precision: 0, color: '#2fa97f' } },
       },
     }),
   });
@@ -166,7 +166,7 @@ function renderCharts(dom, d) {
     type: 'doughnut',
     data: {
       labels: inv.map((x) => `${INV_TYPE[x.type] || x.type}（${moneyFmt(x.amount)}）`),
-      datasets: [{ data: inv.map((x) => x.amount), backgroundColor: SERIES, borderWidth: 2, borderColor: 'rgba(7,10,20,0.8)', hoverOffset: 6 }],
+      datasets: [{ data: inv.map((x) => x.amount), backgroundColor: SERIES, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)', hoverOffset: 6 }],
     },
     options: baseOptions({ cutout: '60%', plugins: { legend: { position: 'bottom' } } }),
   });

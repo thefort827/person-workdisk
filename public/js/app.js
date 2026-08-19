@@ -142,6 +142,7 @@ document.addEventListener('click', (e) => {
   const size = Math.max(rect.width, rect.height) * 1.1;
   const ink = document.createElement('span');
   ink.className = 'ripple-ink';
+  if (btn.classList.contains('btn-outline') || btn.classList.contains('btn-ghost')) ink.classList.add('dark');
   ink.style.width = ink.style.height = size + 'px';
   ink.style.left = e.clientX - rect.left - size / 2 + 'px';
   ink.style.top = e.clientY - rect.top - size / 2 + 'px';

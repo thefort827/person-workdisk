@@ -137,7 +137,7 @@ function renderKpis(dom, d) {
       <div class="kpi-top"><span class="kpi-label">财务任务完成率<span class="kpi-go">→</span></span><span class="kpi-ic">🎯</span></div>
       <div class="ring-wrap" style="justify-content:center;">
         <svg class="ring" width="92" height="92" viewBox="0 0 110 110">
-          <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6d8bff"/><stop offset="100%" stop-color="#34e2a0"/></linearGradient></defs>
+          <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4dd6a8"/><stop offset="100%" stop-color="#4aa8f0"/></linearGradient></defs>
           <circle class="ring-track" cx="55" cy="55" r="46" fill="none" stroke-width="10"/>
           <circle class="ring-fill" id="dash-ring" cx="55" cy="55" r="46" fill="none" stroke-width="10" stroke-dasharray="289.03" stroke-dashoffset="289.03"/>
           <text class="ring-text" x="55" y="58" id="dash-ringText">0%</text>
@@ -310,8 +310,8 @@ function renderCharts(d) {
     data: {
       labels: months,
       datasets: [
-        { label: '新建任务', data: s.taskTrend.map((x) => x.created), backgroundColor: 'rgba(109,139,255,0.55)', borderRadius: 5, barPercentage: 0.55 },
-        { label: '完成任务', data: s.taskTrend.map((x) => x.done), backgroundColor: 'rgba(52,226,160,0.6)', borderRadius: 5, barPercentage: 0.55 },
+        { label: '新建任务', data: s.taskTrend.map((x) => x.created), backgroundColor: 'rgba(90,169,245,0.6)', borderRadius: 5, barPercentage: 0.55 },
+        { label: '完成任务', data: s.taskTrend.map((x) => x.done), backgroundColor: 'rgba(77,214,168,0.65)', borderRadius: 5, barPercentage: 0.55 },
       ],
     },
     options: baseOptions({ onClick: onClickNav('fintodo'), plugins: { legend: { position: 'top' } }, scales: { y: { ...axisGrid(), beginAtZero: true, ticks: { precision: 0 } } } }),
@@ -323,7 +323,7 @@ function renderCharts(d) {
     type: 'doughnut',
     data: {
       labels: invData.map((x) => `${INV_TYPE[x.type] || x.type}（${moneyFmt(x.amount)}）`),
-      datasets: [{ data: invData.map((x) => x.amount), backgroundColor: SERIES, borderWidth: 2, borderColor: 'rgba(7,10,20,0.8)', hoverOffset: 8 }],
+      datasets: [{ data: invData.map((x) => x.amount), backgroundColor: SERIES, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)', hoverOffset: 8 }],
     },
     options: baseOptions({ cutout: '62%', onClick: onClickNav('invoice', (i) => ({ inv_type: invData[i] ? invData[i].type : undefined })), plugins: { legend: { position: 'bottom' } } }),
   });
@@ -335,8 +335,8 @@ function renderCharts(d) {
     data: {
       labels: agingLabels,
       datasets: [
-        { label: '应收', data: s.fundAging.map((x) => x.receivable), backgroundColor: 'rgba(66,214,255,0.65)', borderRadius: 4 },
-        { label: '应付', data: s.fundAging.map((x) => x.payable), backgroundColor: 'rgba(255,160,77,0.65)', borderRadius: 4 },
+        { label: '应收', data: s.fundAging.map((x) => x.receivable), backgroundColor: 'rgba(95,211,211,0.7)', borderRadius: 4 },
+        { label: '应付', data: s.fundAging.map((x) => x.payable), backgroundColor: 'rgba(255,179,92,0.7)', borderRadius: 4 },
       ],
     },
     options: baseOptions({
@@ -355,7 +355,7 @@ function renderCharts(d) {
     type: 'doughnut',
     data: {
       labels: stData.map((x) => TASK_STATUS[x.status] || x.status),
-      datasets: [{ data: stData.map((x) => x.count), backgroundColor: ['#ffd24d', '#42d6ff', '#9b6bff', '#34e2a0'], borderWidth: 2, borderColor: 'rgba(7,10,20,0.8)', hoverOffset: 8 }],
+      datasets: [{ data: stData.map((x) => x.count), backgroundColor: ['#f3c948', '#5fd3d3', '#9d8cff', '#4cd1a0'], borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)', hoverOffset: 8 }],
     },
     options: baseOptions({ cutout: '62%', onClick: onClickNav('fintodo', (i) => ({ status: stData[i] ? stData[i].status : undefined })), plugins: { legend: { position: 'bottom' } } }),
   });
@@ -366,7 +366,7 @@ function renderCharts(d) {
     type: 'bar',
     data: {
       labels: study.map((x) => x.chapter),
-      datasets: [{ label: '分钟', data: study.map((x) => x.minutes), backgroundColor: 'rgba(155,107,255,0.7)', borderRadius: 5, barPercentage: 0.55 }],
+      datasets: [{ label: '分钟', data: study.map((x) => x.minutes), backgroundColor: 'rgba(157,140,255,0.75)', borderRadius: 5, barPercentage: 0.55 }],
     },
     options: baseOptions({
       indexAxis: 'y',
@@ -382,7 +382,7 @@ function renderCharts(d) {
     data: {
       labels: s.invoiceTrend.map((x) => x.month.slice(5)),
       datasets: [
-        { label: '票据金额', data: s.invoiceTrend.map((x) => x.amount), borderColor: PALETTE.accent, backgroundColor: 'rgba(109,139,255,0.14)', fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: PALETTE.accent },
+        { label: '票据金额', data: s.invoiceTrend.map((x) => x.amount), borderColor: PALETTE.accent, backgroundColor: 'rgba(77,214,168,0.16)', fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: PALETTE.accent },
       ],
     },
     options: baseOptions({

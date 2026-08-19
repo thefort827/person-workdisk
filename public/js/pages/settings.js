@@ -41,7 +41,9 @@ export const settingsPage = {
       <div class="glass-card fade-in">
         <div class="card-head"><div class="card-title"><span class="bar"></span>ℹ️ 关于</div></div>
         <div class="flex" style="gap:14px;align-items:flex-start;">
-          <div class="logo-mark" style="width:46px;height:46px;font-size:22px;">💼</div>
+          <div class="logo-mark" style="width:46px;height:46px;">
+            <svg viewBox="0 0 48 48" style="width:32px;height:32px;"><circle cx="40" cy="8" r="1.8" fill="rgba(255,255,255,0.85)"/><path d="M12 32 L21 24 L28 27 L37 16" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="37" cy="16" r="3.4" fill="#fff"/></svg>
+          </div>
           <div>
             <div style="font-weight:700;font-size:15px;">财务工程师个人工作台 v1.0.0</div>
             <div class="text-secondary" style="font-size:12.5px;margin-top:4px;">
