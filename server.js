@@ -56,6 +56,7 @@ const ROUTES = {
   '/api/health': require('./api/health'),
   '/api/report': require('./api/report'),
   '/api/import': require('./api/import'),
+  '/api/chat': require('./api/chat'),
 };
 
 function serveStatic(res, filePath) {

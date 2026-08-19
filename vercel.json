@@ -10,5 +10,8 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/chat.js": { "maxDuration": 60 }
+  }
 }

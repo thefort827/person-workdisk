@@ -23,9 +23,10 @@
 | 🔥 **习惯打卡** | 连续天数统计、GitHub 风格 26 周热力图、本月日历 |
 | 📖 **CPA 备考系统** | 章节学习记录 + 时长统计（看板图表联动） |
 | 📝 **周复盘 / 🗓 月复盘** | 周期性总结沉淀 |
+| 🤖 **AI 财务助手** | 右下角悬浮聊天窗 · 小米 MiMo 驱动 · 会计/税务/结账/Excel 问答 · 自动读取工作台数据回答"本周到期/逾期/应收应付"等实时问题 · SSE 流式输出 · Markdown 渲染 · 对话历史本地保存 |
 | ⚙️ **设置 · 备份** | 系统连接状态巡检、JSON 全量备份/导入恢复、一键导入演示数据、访问口令锁定 |
 
-**UI 与体验**：深色玻璃拟态设计 · 背景光晕动画 · 卡片悬浮/入场动效 · 数字滚动 · 骨架屏 ·
+**UI 与体验**：小清新浅色设计（薄荷绿/天蓝马卡龙配色）· 柔和光斑背景 · 卡片悬浮/入场动效 · 数字滚动 · 骨架屏 ·
 Toast 轻提示 · 弹窗确认 · 响应式（桌面/平板/手机，移动端抽屉导航）。
 
 ---
@@ -57,6 +58,7 @@ person-workdisk/
 │   │   ├── app.js           # 引导：健康检查/锁屏/时钟
 │   │   ├── router.js        # Hash 路由
 │   │   ├── api.js           # API 封装
+│   │   ├── ai.js            # AI 财务助手（悬浮聊天窗）
 │   │   ├── ui.js            # UI 组件库
 │   │   ├── charts.js        # Chart.js 主题封装
 │   │   ├── store.js         # 数据层/备份/演示数据
@@ -68,6 +70,7 @@ person-workdisk/
 │   ├── data.js              # 通用 CRUD
 │   ├── dashboard.js         # BI 看板聚合
 │   ├── report.js            # 报表中心聚合
+│   ├── chat.js              # AI 助手（代理 MiMo + 数据摘要 + SSE 流式）
 │   ├── health.js            # 健康检查/建表自检
 │   ├── import.js            # 批量导入
 │   └── _lib/                # 共享工具（Supabase 客户端/响应/鉴权）
@@ -108,6 +111,10 @@ git push -u origin main
 | `SUPABASE_URL` | Supabase 项目地址 | `https://<ref>.supabase.co` |
 | `SUPABASE_SECRET_KEY` | 服务端密钥（**只配在后端**） | `sb_secret_xxxx` |
 | `APP_TOKEN` | 访问口令（可选，设置后需口令才能使用） | `你的口令` |
+| `MIMO_API_KEY` | AI 助手 · 小米 MiMo 平台密钥（**只配在后端**） | `sk_xxxx` |
+| `MIMO_API_BASE` | AI 助手 · MiMo 接口地址（可选，sk- 密钥默认） | `https://api.xiaomimimo.com/v1` |
+| `MIMO_MODEL` | AI 助手 · 模型名（可选） | `mimo-v2.5` |
+| `MIMO_MAX_TOKENS` | AI 助手 · 单次回答最大 token（可选） | `1600` |
 
 4. 点击 **Deploy**，等待部署完成即可访问 `https://<项目名>.vercel.app`
 
@@ -135,6 +142,23 @@ cd scripts && npm install && node migrate.js ../supabase/schema.sql
 # 前端冒烟测试（需先启动 server.js）
 node scripts/smoke.js
 ```
+
+---
+
+## 🤖 AI 财务助手
+
+右下角悬浮机器人，基于**小米 MiMo**（OpenAI 兼容接口）实现，后端 `api/chat.js` 代理调用，**双模式**：
+
+- **在线模式**（配置 `MIMO_API_KEY`）：
+  - **财务专家问答**：会计分录、增值税/个税/企业所得税申报、发票认证抵扣、月末结账、往来账龄与坏账、Excel 技巧、CPA/中级备考
+  - **实时数据问答**：每次提问后端自动从数据库生成一份**数据摘要**注入上下文，可回答"本周有哪些到期/逾期""应收应付情况""帮我做学习复盘"等
+  - **流式输出**：SSE 打字机效果 + Markdown 渲染（标题/列表/代码块/引用）
+- **离线模式**（未配置密钥）：自动基于工作台实时数据生成**结构化分析报告**（资金概览、逾期应收应付、票据到期提醒、任务完成率、税务待办、结账状态、习惯与建议），开箱即用、无需任何密钥
+
+**隐私与安全**：AI 密钥只存在于后端环境变量（`MIMO_API_KEY`），浏览器永远接触不到；对话历史仅保存在本地浏览器 `localStorage`，不上传数据库；发送给模型的是工作台数据摘要，请勿在对话中透露企业涉密信息。
+
+> ⚠️ 需在 [小米 MiMo 开放平台](https://platform.xiaomimimo.com) 创建 API Key 并**充值/领取额度**；账号余额不足时接口返回 `402 Insufficient account balance`。
+> 生成的政策类回答仅供参考，重要事项请以最新法规为准并咨询税务师。
 
 ---
 

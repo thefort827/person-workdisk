@@ -7,6 +7,7 @@ import { startRouter } from './router.js';
 import { api, getToken, setToken } from './api.js';
 import { toast, openModal, esc, debounce } from './ui.js';
 import { fetchEntity } from './store.js';
+import { initAiChat } from './ai.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -285,4 +286,5 @@ window.addEventListener('fwb:auth-failed', () => {
 });
 
 /* ---------- 启动 ---------- */
+initAiChat();
 boot();
