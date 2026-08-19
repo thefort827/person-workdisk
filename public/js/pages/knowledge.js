@@ -6,6 +6,7 @@ const TAGS = [
   { value: 'tax', label: '税务' },
   { value: 'sys', label: '系统操作' },
   { value: 'excel', label: 'Excel 技巧' },
+  { value: 'cpa', label: 'CPA学习' },
   { value: 'other', label: '其他' },
 ];
 const tagMap = Object.fromEntries(TAGS.map((o) => [o.value, o.label]));
