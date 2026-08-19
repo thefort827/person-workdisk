@@ -204,20 +204,20 @@ module.exports = async function handler(req, res) {
       const days = daysFromToday(t.deadline);
       if (days === null) continue;
       const level = days < 0 ? 'danger' : days === 0 ? 'orange' : days <= 7 ? 'yellow' : null;
-      if (level) events.push({ level, src: '财务专项待办', title: t.name, date: t.deadline, days });
+      if (level) events.push({ level, src: '财务专项待办', title: t.name, date: t.deadline, days, id: t.id, entity: 'fintodo' });
     }
     for (const i of invoices) {
       if (i.status === 'archive') continue;
       const days = daysFromToday(i.expire);
       if (days === null) continue;
       const level = days < 0 ? 'danger' : days === 0 ? 'orange' : days <= 7 ? 'yellow' : null;
-      if (level) events.push({ level, src: '票据台账', title: `${i.inv_type} ${i.inv_no || ''} ${i.counterparty || ''}`.trim() || '票据', date: i.expire, days });
+      if (level) events.push({ level, src: '票据台账', title: `${i.inv_type} ${i.inv_no || ''} ${i.counterparty || ''}`.trim() || '票据', date: i.expire, days, id: i.id, entity: 'invoice' });
     }
     for (const f of openFunds) {
       const days = daysFromToday(f.deadline);
       if (days === null) continue;
       const level = days < 0 ? 'danger' : days === 0 ? 'orange' : days <= 7 ? 'yellow' : null;
-      if (level) events.push({ level, src: '往来资金', title: `${f.fund_type === 'receivable' ? '应收' : '应付'}｜${f.party}`, date: f.deadline, days });
+      if (level) events.push({ level, src: '往来资金', title: `${f.fund_type === 'receivable' ? '应收' : '应付'}｜${f.party}`, date: f.deadline, days, id: f.id, entity: 'fund' });
     }
     events.sort((a, b) => {
       const lv = { danger: 0, orange: 1, yellow: 2 };

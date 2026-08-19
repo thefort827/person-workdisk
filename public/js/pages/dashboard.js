@@ -1,5 +1,6 @@
-import { esc, toast, countUp, fmtMoneyShort, fmtMoney, daysFromToday, todayStr } from '../ui.js';
-import { loadDashboard } from '../store.js';
+import { esc, toast, countUp, fmtMoney, todayStr } from '../ui.js';
+import { loadDashboard, setPageFilter, updateRow } from '../store.js';
+import { navigate } from '../router.js';
 import { makeChart, SERIES, PALETTE, baseOptions, axisGrid, moneyFmt } from '../charts.js';
 
 const TASK_STATUS = { pending: '待处理', processing: '处理中', review: '待复核', done: '已完成' };
@@ -12,16 +13,19 @@ export const dashboardPage = {
   subtitle: '全自动今日智能事务中心',
   icon: '📊',
   render: async (container) => {
+    const hour = new Date().getHours();
+    const greet = hour < 6 ? '夜深了' : hour < 12 ? '早上好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
     container.innerHTML = `
       <div class="glass-card fade-in">
         <div class="card-head">
-          <div class="card-title"><span class="bar"></span>💡 智能首页</div>
+          <div class="card-title"><span class="bar"></span>💡 智能首页 <span class="tag tag-default">${greet}，${todayStr()}</span></div>
           <div class="card-actions">
             <span class="count-pill" id="dash-ts">加载中…</span>
             <button class="btn btn-outline btn-sm" id="dash-refresh">🔄 刷新</button>
           </div>
         </div>
         <div class="kpi-grid" id="dash-kpis"></div>
+        <div class="chart-legend-note">💡 提示：点击下方 KPI 卡片或图表可跳转到对应模块并自动筛选</div>
       </div>
 
       <div class="chart-grid">
@@ -129,11 +133,11 @@ function renderKpis(dom, d) {
   const closeCls = { pending: 'tag-pending', processing: 'tag-processing', review: 'tag-review', done: 'tag-done' }[k.monthCloseStatus] || 'tag-pending';
 
   wrap.innerHTML = `
-    <div class="kpi-card green">
-      <div class="kpi-top"><span class="kpi-label">财务任务完成率</span><span class="kpi-ic">🎯</span></div>
+    <div class="kpi-card green" data-nav="fintodo">
+      <div class="kpi-top"><span class="kpi-label">财务任务完成率<span class="kpi-go">→</span></span><span class="kpi-ic">🎯</span></div>
       <div class="ring-wrap" style="justify-content:center;">
         <svg class="ring" width="92" height="92" viewBox="0 0 110 110">
-          <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5b78ff"/><stop offset="100%" stop-color="#2fd99a"/></linearGradient></defs>
+          <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6d8bff"/><stop offset="100%" stop-color="#34e2a0"/></linearGradient></defs>
           <circle class="ring-track" cx="55" cy="55" r="46" fill="none" stroke-width="10"/>
           <circle class="ring-fill" id="dash-ring" cx="55" cy="55" r="46" fill="none" stroke-width="10" stroke-dasharray="289.03" stroke-dashoffset="289.03"/>
           <text class="ring-text" x="55" y="58" id="dash-ringText">0%</text>
@@ -142,41 +146,51 @@ function renderKpis(dom, d) {
       </div>
       <div class="kpi-delta up center">完成 ${k.taskDone} · 共 ${k.taskTotal} 项</div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-label">应收总额（未清）</span><span class="kpi-ic">💵</span></div>
+    <div class="kpi-card" data-nav="fund" data-filter='{"fund_type":"receivable"}'>
+      <div class="kpi-top"><span class="kpi-label">应收总额（未清）<span class="kpi-go">→</span></span><span class="kpi-ic">💵</span></div>
       <div class="kpi-val" id="kpi-rec">¥ 0</div>
-      <div class="kpi-delta up">回款压力 ${fmtMoneyShort(k.receivableTotal)}</div>
+      <div class="kpi-delta up">点击查看应收明细</div>
     </div>
-    <div class="kpi-card orange">
-      <div class="kpi-top"><span class="kpi-label">应付总额（未清）</span><span class="kpi-ic">💳</span></div>
+    <div class="kpi-card orange" data-nav="fund" data-filter='{"fund_type":"payable"}'>
+      <div class="kpi-top"><span class="kpi-label">应付总额（未清）<span class="kpi-go">→</span></span><span class="kpi-ic">💳</span></div>
       <div class="kpi-val" id="kpi-pay">¥ 0</div>
-      <div class="kpi-delta down">付款安排 ${fmtMoneyShort(k.payableTotal)}</div>
+      <div class="kpi-delta down">点击查看应付明细</div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-label">报税倒计时</span><span class="kpi-ic">🗓</span></div>
+    <div class="kpi-card" data-nav="tax">
+      <div class="kpi-top"><span class="kpi-label">报税倒计时<span class="kpi-go">→</span></span><span class="kpi-ic">🗓</span></div>
       <div class="kpi-val" id="kpi-tax">--<small>天</small></div>
       <div class="kpi-delta">待申报事项 <b>${k.taxPending}</b> 项</div>
     </div>
-    <div class="kpi-card red">
-      <div class="kpi-top"><span class="kpi-label">逾期风险事项</span><span class="kpi-ic">🚨</span></div>
+    <div class="kpi-card red" data-nav="fintodo" data-filter='{"status":"pending"}'>
+      <div class="kpi-top"><span class="kpi-label">逾期风险事项<span class="kpi-go">→</span></span><span class="kpi-ic">🚨</span></div>
       <div class="kpi-val" id="kpi-overdue">0</div>
       <div class="kpi-delta down">今日事务 ${k.eventTotal} 条</div>
     </div>
-    <div class="kpi-card yellow">
-      <div class="kpi-top"><span class="kpi-label">近7天到期</span><span class="kpi-ic">⏳</span></div>
+    <div class="kpi-card yellow" data-nav="fintodo">
+      <div class="kpi-top"><span class="kpi-label">近7天到期<span class="kpi-go">→</span></span><span class="kpi-ic">⏳</span></div>
       <div class="kpi-val" id="kpi-near7">0</div>
       <div class="kpi-delta">含今日到期事项</div>
     </div>
-    <div class="kpi-card green">
-      <div class="kpi-top"><span class="kpi-label">连续打卡</span><span class="kpi-ic">🔥</span></div>
+    <div class="kpi-card green" data-nav="checkin">
+      <div class="kpi-top"><span class="kpi-label">连续打卡<span class="kpi-go">→</span></span><span class="kpi-ic">🔥</span></div>
       <div class="kpi-val" id="kpi-streak">0<small>天</small></div>
       <div class="kpi-delta up">累计 ${k.checkinTotal} 天</div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-label">学习时长</span><span class="kpi-ic">📖</span></div>
+    <div class="kpi-card" data-nav="study">
+      <div class="kpi-top"><span class="kpi-label">学习时长<span class="kpi-go">→</span></span><span class="kpi-ic">📖</span></div>
       <div class="kpi-val" id="kpi-study">0<small>分钟</small></div>
       <div class="kpi-delta">${k.studyCount} 条学习记录</div>
     </div>`;
+
+  // KPI 点击跳转（可携带模块筛选）
+  wrap.querySelectorAll('.kpi-card[data-nav]').forEach((card) => {
+    card.onclick = () => {
+      const page = card.dataset.nav;
+      const filter = card.dataset.filter ? JSON.parse(card.dataset.filter) : null;
+      if (filter) setPageFilter(page, filter);
+      navigate(page);
+    };
+  });
 
   // 动画数字
   countUp(dom.querySelector('#kpi-rec'), k.receivableTotal, { duration: 900, decimals: 0, suffix: '' });
@@ -198,6 +212,31 @@ function renderKpis(dom, d) {
 }
 
 /* ---------------- 事件 ---------------- */
+const EVENT_ACTIONS = {
+  fintodo: { label: '✔ 完成', cls: 'btn-success', patch: (r) => ({ status: 'done', done_at: new Date().toISOString() }), done: '任务已完成' },
+  fund: { label: '✔ 已清', cls: 'btn-success', patch: () => ({ status: 'cleared' }), done: '已标记为已清' },
+  invoice: { label: '🗄 归档', cls: 'btn-outline', patch: () => ({ status: 'archive' }), done: '已归档' },
+};
+
+async function quickAct(e, btn) {
+  const act = EVENT_ACTIONS[e.entity];
+  if (!act) return;
+  btn.disabled = true;
+  try {
+    await updateRow(e.entity, e.id, act.patch(e));
+    toast(`✅ ${act.done}`, 'success');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+  // 重新拉取看板数据
+  try {
+    const d = await loadDashboard(true);
+    renderEvents(document.getElementById('app'), d);
+    renderClose(document.getElementById('app'), d);
+    renderKpis(document.getElementById('app'), d);
+  } catch { /* 忽略 */ }
+}
+
 function renderEvents(dom, d) {
   const wrap = dom.querySelector('#dash-events');
   const evts = d.lists.events || [];
@@ -210,6 +249,7 @@ function renderEvents(dom, d) {
   const pageMap = { '财务专项待办': 'fintodo', '票据台账': 'invoice', '往来资金': 'fund' };
   evts.slice(0, 12).forEach((e, i) => {
     const daysTxt = e.days < 0 ? `已逾期 ${-e.days} 天` : e.days === 0 ? '今天到期' : `${e.days} 天后到期`;
+    const act = EVENT_ACTIONS[e.entity];
     const item = document.createElement('div');
     item.className = `event-item ${e.level}`;
     item.style.animationDelay = `${Math.min(i, 8) * 45}ms`;
@@ -219,8 +259,14 @@ function renderEvents(dom, d) {
         <div class="event-title"><span class="event-src">${esc(e.src)}</span> ${esc(e.title)}</div>
         <div class="event-date">到期：${esc(e.date)}<span class="days">${daysTxt}</span></div>
       </div>
-      <a class="btn btn-sm btn-outline" href="#${pageMap[e.src] || 'fintodo'}">去处理</a>`;
+      <div class="action-bar">
+        ${act ? `<button class="btn btn-sm ${act.cls}" data-quick="1">${esc(act.label)}</button>` : ''}
+        <a class="btn btn-sm btn-outline" href="#${pageMap[e.src] || 'fintodo'}">详情 →</a>
+      </div>`;
     wrap.appendChild(item);
+  });
+  wrap.querySelectorAll('[data-quick]').forEach((btn, idx) => {
+    btn.onclick = () => quickAct(evts[idx], btn);
   });
 }
 
@@ -240,6 +286,20 @@ function renderClose(dom, d) {
 }
 
 /* ---------------- 图表 ---------------- */
+/** 图表点击 → 带筛选跳转到对应模块 */
+function chartNav(page, filters) {
+  if (filters && Object.keys(filters).length) setPageFilter(page, filters);
+  navigate(page);
+}
+function onClickNav(page, filters) {
+  return (evt, elements) => {
+    if (!elements || !elements.length) return;
+    const idx = elements[0].index;
+    const f = typeof filters === 'function' ? filters(idx) : filters;
+    chartNav(page, f);
+  };
+}
+
 function renderCharts(d) {
   const s = d.series;
 
@@ -250,11 +310,11 @@ function renderCharts(d) {
     data: {
       labels: months,
       datasets: [
-        { label: '新建任务', data: s.taskTrend.map((x) => x.created), backgroundColor: 'rgba(91,120,255,0.55)', borderRadius: 5, barPercentage: 0.55 },
-        { label: '完成任务', data: s.taskTrend.map((x) => x.done), backgroundColor: 'rgba(47,217,154,0.6)', borderRadius: 5, barPercentage: 0.55 },
+        { label: '新建任务', data: s.taskTrend.map((x) => x.created), backgroundColor: 'rgba(109,139,255,0.55)', borderRadius: 5, barPercentage: 0.55 },
+        { label: '完成任务', data: s.taskTrend.map((x) => x.done), backgroundColor: 'rgba(52,226,160,0.6)', borderRadius: 5, barPercentage: 0.55 },
       ],
     },
-    options: baseOptions({ plugins: { legend: { position: 'top' } }, scales: { y: { ...axisGrid(), beginAtZero: true, ticks: { precision: 0 } } } }),
+    options: baseOptions({ onClick: onClickNav('fintodo'), plugins: { legend: { position: 'top' } }, scales: { y: { ...axisGrid(), beginAtZero: true, ticks: { precision: 0 } } } }),
   });
 
   // 票据类型金额
@@ -263,9 +323,9 @@ function renderCharts(d) {
     type: 'doughnut',
     data: {
       labels: invData.map((x) => `${INV_TYPE[x.type] || x.type}（${moneyFmt(x.amount)}）`),
-      datasets: [{ data: invData.map((x) => x.amount), backgroundColor: SERIES, borderWidth: 2, borderColor: 'rgba(7,10,20,0.8)', hoverOffset: 6 }],
+      datasets: [{ data: invData.map((x) => x.amount), backgroundColor: SERIES, borderWidth: 2, borderColor: 'rgba(7,10,20,0.8)', hoverOffset: 8 }],
     },
-    options: baseOptions({ cutout: '62%', plugins: { legend: { position: 'bottom' } } }),
+    options: baseOptions({ cutout: '62%', onClick: onClickNav('invoice', (i) => ({ inv_type: invData[i] ? invData[i].type : undefined })), plugins: { legend: { position: 'bottom' } } }),
   });
 
   // 账龄分布
@@ -275,11 +335,15 @@ function renderCharts(d) {
     data: {
       labels: agingLabels,
       datasets: [
-        { label: '应收', data: s.fundAging.map((x) => x.receivable), backgroundColor: 'rgba(49,198,232,0.65)', borderRadius: 4 },
-        { label: '应付', data: s.fundAging.map((x) => x.payable), backgroundColor: 'rgba(255,155,66,0.65)', borderRadius: 4 },
+        { label: '应收', data: s.fundAging.map((x) => x.receivable), backgroundColor: 'rgba(66,214,255,0.65)', borderRadius: 4 },
+        { label: '应付', data: s.fundAging.map((x) => x.payable), backgroundColor: 'rgba(255,160,77,0.65)', borderRadius: 4 },
       ],
     },
     options: baseOptions({
+      onClick: onClickNav('fund', (i) => {
+        const b = s.fundAging[i];
+        return b && b.bucket === 'overdue' ? { status: 'open' } : undefined;
+      }),
       plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}：¥ ${fmtMoney(c.parsed.y)}` } } },
       scales: { x: { stacked: true, ...axisGrid() }, y: { stacked: true, beginAtZero: true, ...axisGrid(), ticks: { callback: (v) => moneyFmt(v) } } },
     }),
@@ -291,9 +355,9 @@ function renderCharts(d) {
     type: 'doughnut',
     data: {
       labels: stData.map((x) => TASK_STATUS[x.status] || x.status),
-      datasets: [{ data: stData.map((x) => x.count), backgroundColor: ['#f7d046', '#31c6e8', '#8a5bff', '#2fd99a'], borderWidth: 2, borderColor: 'rgba(7,10,20,0.8)', hoverOffset: 6 }],
+      datasets: [{ data: stData.map((x) => x.count), backgroundColor: ['#ffd24d', '#42d6ff', '#9b6bff', '#34e2a0'], borderWidth: 2, borderColor: 'rgba(7,10,20,0.8)', hoverOffset: 8 }],
     },
-    options: baseOptions({ cutout: '62%', plugins: { legend: { position: 'bottom' } } }),
+    options: baseOptions({ cutout: '62%', onClick: onClickNav('fintodo', (i) => ({ status: stData[i] ? stData[i].status : undefined })), plugins: { legend: { position: 'bottom' } } }),
   });
 
   // 备考章节时长
@@ -302,10 +366,11 @@ function renderCharts(d) {
     type: 'bar',
     data: {
       labels: study.map((x) => x.chapter),
-      datasets: [{ label: '分钟', data: study.map((x) => x.minutes), backgroundColor: 'rgba(167,139,250,0.7)', borderRadius: 5, barPercentage: 0.55 }],
+      datasets: [{ label: '分钟', data: study.map((x) => x.minutes), backgroundColor: 'rgba(155,107,255,0.7)', borderRadius: 5, barPercentage: 0.55 }],
     },
     options: baseOptions({
       indexAxis: 'y',
+      onClick: onClickNav('study'),
       plugins: { legend: { display: false } },
       scales: { x: { beginAtZero: true, ...axisGrid() }, y: { ...axisGrid() } },
     }),
@@ -317,10 +382,11 @@ function renderCharts(d) {
     data: {
       labels: s.invoiceTrend.map((x) => x.month.slice(5)),
       datasets: [
-        { label: '票据金额', data: s.invoiceTrend.map((x) => x.amount), borderColor: PALETTE.accent, backgroundColor: 'rgba(91,120,255,0.12)', fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: PALETTE.accent },
+        { label: '票据金额', data: s.invoiceTrend.map((x) => x.amount), borderColor: PALETTE.accent, backgroundColor: 'rgba(109,139,255,0.14)', fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: PALETTE.accent },
       ],
     },
     options: baseOptions({
+      onClick: onClickNav('invoice'),
       plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (c) => `¥ ${fmtMoney(c.parsed.y)}` } } },
       scales: { y: { beginAtZero: true, ...axisGrid(), ticks: { callback: (v) => moneyFmt(v) } } },
     }),

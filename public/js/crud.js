@@ -4,7 +4,7 @@
  */
 
 import { esc, toast, openModal, confirmDialog, emptyState, debounce } from './ui.js';
-import { fetchEntity, addRow, updateRow, removeRow, invalidate } from './store.js';
+import { fetchEntity, addRow, updateRow, removeRow, consumePageFilter } from './store.js';
 
 function fieldHtml(f) {
   const label = `<label class="field-label">${esc(f.label)}${f.required ? ' <span class="text-danger">*</span>' : ''}</label>`;
@@ -212,6 +212,17 @@ export function createCrudPage(cfg) {
       container.querySelectorAll('[data-filter]').forEach((sel) => {
         sel.onchange = () => { state.filters[sel.dataset.filter] = sel.value; renderList(container.querySelector('#crud-list')); };
       });
+
+      // 跨页联动筛选（看板点图表跳转过来时带上的筛选）
+      const navFilter = consumePageFilter(cfg.id);
+      if (navFilter) {
+        state.filters = { ...state.filters, ...navFilter };
+        container.querySelectorAll('[data-filter]').forEach((sel) => {
+          const key = sel.dataset.filter;
+          if (state.filters[key]) sel.value = state.filters[key];
+        });
+        if (Object.keys(navFilter).length) toast('已按图表筛选显示', 'info');
+      }
 
       // 列表操作（事件委托）
       const list = container.querySelector('#crud-list');

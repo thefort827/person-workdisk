@@ -4,23 +4,23 @@
 
 // 统一配色
 export const PALETTE = {
-  accent: '#5b78ff',
-  accent2: '#8a5bff',
-  green: '#2fd99a',
-  red: '#ff5464',
-  orange: '#ff9b42',
-  yellow: '#f7d046',
-  cyan: '#31c6e8',
-  pink: '#ec6aa8',
-  purple: '#a78bfa',
+  accent: '#6d8bff',
+  accent2: '#9b6bff',
+  green: '#34e2a0',
+  red: '#ff5d6e',
+  orange: '#ffa04d',
+  yellow: '#ffd24d',
+  cyan: '#42d6ff',
+  pink: '#f07fb8',
+  purple: '#b18cff',
   slate: 'rgba(255,255,255,0.22)',
 };
 
-export const SERIES = ['#5b78ff', '#31c6e8', '#2fd99a', '#ff9b42', '#f7d046', '#ff5464', '#8a5bff', '#ec6aa8', '#a78bfa', '#5fd9d3'];
+export const SERIES = ['#6d8bff', '#42d6ff', '#34e2a0', '#ffa04d', '#ffd24d', '#ff5d6e', '#9b6bff', '#f07fb8', '#b18cff', '#6fe3dd'];
 
 export function initChartDefaults() {
   if (typeof Chart === 'undefined') return;
-  Chart.defaults.color = '#9aa0bd';
+  Chart.defaults.color = '#9aa3c7';
   Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
   Chart.defaults.font.family = '"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif';
   Chart.defaults.font.size = 11.5;

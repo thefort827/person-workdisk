@@ -5,7 +5,8 @@
 import { initChartDefaults } from './charts.js';
 import { startRouter } from './router.js';
 import { api, getToken, setToken } from './api.js';
-import { toast, openModal, esc } from './ui.js';
+import { toast, openModal, esc, debounce } from './ui.js';
+import { fetchEntity } from './store.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -60,6 +61,93 @@ $('quickAddBtn').onclick = () => {
     </div>`,
   });
 };
+
+/* ---------- 全局搜索 ---------- */
+const SEARCH_CFG = [
+  { entity: 'fintodo', page: 'fintodo', label: '财务专项待办', ic: '📋', fields: ['name', 'note'], title: (r) => r.name, sub: (r) => `截止：${r.deadline || '未设置'} · 状态：${r.status}` },
+  { entity: 'invoice', page: 'invoice', label: '票据台账', ic: '🧾', fields: ['inv_no', 'counterparty', 'note'], title: (r) => `${r.counterparty || '票据'} ${r.inv_no || ''}`.trim(), sub: (r) => `金额：¥ ${Number(r.amount) || 0} · ${r.inv_date || ''}` },
+  { entity: 'fund', page: 'fund', label: '往来资金', ic: '💰', fields: ['party', 'note'], title: (r) => `${r.party || '未知'}`, sub: (r) => `${r.fund_type === 'receivable' ? '应收' : '应付'} ¥ ${Number(r.amount) || 0} · 到期 ${r.deadline || '—'}` },
+  { entity: 'tax', page: 'tax', label: '税务管理', ic: '📑', fields: ['title', 'note'], title: (r) => r.title, sub: (r) => `截止：${r.deadline || '未设置'}` },
+  { entity: 'knowledge', page: 'knowledge', label: '财务知识库', ic: '📚', fields: ['title', 'body'], title: (r) => r.title || '无标题', sub: (r) => String(r.body || '').slice(0, 40) },
+];
+
+async function runSearch(q) {
+  const panel = $('searchPanel');
+  if (!q) { panel.classList.remove('show'); panel.innerHTML = ''; return; }
+  const kw = q.toLowerCase();
+  const items = [];
+  for (const cfg of SEARCH_CFG) {
+    try {
+      const rows = await fetchEntity(cfg.entity);
+      for (const r of rows) {
+        const hay = (cfg.fields.map((f) => String(r[f] || '')).join(' ')).toLowerCase();
+        if (!hay.includes(kw)) continue;
+        items.push({ cfg, r });
+        if (items.length >= 12) break;
+      }
+    } catch { /* 单个模块失败不影响其他 */ }
+    if (items.length >= 12) break;
+  }
+  panel.innerHTML = '';
+  if (!items.length) {
+    panel.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="empty-ic" style="font-size:30px;">🔍</div><div>没有找到与「${esc(q)}」相关的内容</div></div>`;
+    panel.classList.add('show');
+    return;
+  }
+  panel.innerHTML = `<div class="sp-title">共 ${items.length} 条匹配结果，点击跳转</div>`;
+  items.forEach(({ cfg, r }) => {
+    const item = document.createElement('div');
+    item.className = 'search-item';
+    item.innerHTML = `
+      <span class="si-ic">${cfg.ic}</span>
+      <div class="si-main">
+        <div class="si-title">${esc(cfg.title(r))}</div>
+        <div class="si-sub">${esc(cfg.sub(r))}</div>
+      </div>
+      <span class="si-src">${esc(cfg.label)}</span>`;
+    item.onclick = () => {
+      panel.classList.remove('show');
+      $('globalSearchInput').value = '';
+      location.hash = '#' + cfg.page;
+    };
+    panel.appendChild(item);
+  });
+  panel.classList.add('show');
+}
+
+const searchInput = $('globalSearchInput');
+if (searchInput) {
+  const doSearch = debounce(() => runSearch(searchInput.value.trim()), 260);
+  searchInput.addEventListener('input', doSearch);
+  searchInput.addEventListener('focus', () => { if (searchInput.value.trim()) doSearch(); });
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { $('searchPanel').classList.remove('show'); searchInput.blur(); }
+    if (e.key === 'Enter') {
+      const first = $('searchPanel').querySelector('.search-item');
+      if (first) first.click();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    const panel = $('searchPanel');
+    if (!panel.classList.contains('show')) return;
+    if (!e.target.closest('.global-search')) panel.classList.remove('show');
+  });
+}
+
+/* ---------- 按钮波纹 ---------- */
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn');
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 1.1;
+  const ink = document.createElement('span');
+  ink.className = 'ripple-ink';
+  ink.style.width = ink.style.height = size + 'px';
+  ink.style.left = e.clientX - rect.left - size / 2 + 'px';
+  ink.style.top = e.clientY - rect.top - size / 2 + 'px';
+  btn.appendChild(ink);
+  setTimeout(() => ink.remove(), 650);
+});
 
 /* ---------- 连接状态指示 ---------- */
 function setConn(state, text) {

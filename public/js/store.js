@@ -57,6 +57,24 @@ export async function removeRow(entity, id) {
   invalidate(entity);
 }
 
+/* ---------- 跨页联动筛选：看板点图表 → 跳转到模块并自动应用筛选 ---------- */
+let pendingNavFilter = null;
+
+/** 设置跳转前要应用的筛选（page 为目标页面 id，filters 形如 { status: 'done' }） */
+export function setPageFilter(page, filters) {
+  pendingNavFilter = { page, filters };
+}
+
+/** 消费该页面的一次性筛选（渲染时调用一次） */
+export function consumePageFilter(page) {
+  if (pendingNavFilter && pendingNavFilter.page === page) {
+    const f = pendingNavFilter.filters;
+    pendingNavFilter = null;
+    return f;
+  }
+  return null;
+}
+
 /* ---------- 看板 / 报表 ---------- */
 export async function loadDashboard(force = false) {
   const res = await api.dashboard();
