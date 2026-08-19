@@ -12,6 +12,19 @@ import { esc } from './ui.js';
 const KEY_MSGS = 'fwb_ai_msgs';
 const MAX_HISTORY = 40;
 
+/* 小清新机器人 Logo（与网站主色一致：薄荷绿/天蓝/淡粉） */
+const AI_ICON_SVG = `
+  <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <line x1="24" y1="13" x2="24" y2="5.5" stroke="rgba(255,255,255,0.95)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="24" cy="4.6" r="2.6" fill="#fff" opacity="0.95"/>
+    <rect x="8" y="12" width="32" height="27" rx="10" fill="#fff"/>
+    <circle cx="17.5" cy="24.5" r="3.4" fill="#4dd6a8"/>
+    <circle cx="30.5" cy="24.5" r="3.4" fill="#4aa8f0"/>
+    <circle cx="12.8" cy="30" r="2.6" fill="#ffb3bf" opacity="0.75"/>
+    <circle cx="35.2" cy="30" r="2.6" fill="#ffb3bf" opacity="0.75"/>
+    <path d="M18.5 31.5 Q24 37 29.5 31.5" stroke="#2f6d57" stroke-width="2.6" stroke-linecap="round"/>
+  </svg>`;
+
 const QUICK_PROMPTS = [
   '📋 本周有哪些到期的财务任务和票据？',
   '🚨 有没有逾期的应收 / 应付？',
@@ -97,11 +110,11 @@ function buildWidget() {
   root.id = 'aiChat';
   root.innerHTML = `
     <button class="ai-fab" id="aiFab" title="AI 财务助手" aria-label="打开 AI 助手">
-      <span class="ai-fab-ic">🤖</span>
+      <span class="ai-fab-ic">${AI_ICON_SVG}</span>
     </button>
     <div class="ai-panel" id="aiPanel" role="dialog" aria-label="AI 财务助手">
       <div class="ai-head">
-        <div class="ai-title"><span class="ai-logo">🤖</span><div><div class="ai-name">AI 财务助手</div><div class="ai-sub">MiMo · 实时读取工作台数据</div></div></div>
+        <div class="ai-title"><span class="ai-logo">${AI_ICON_SVG}</span><div><div class="ai-name">AI 财务助手</div><div class="ai-sub">MiMo · 实时读取工作台数据</div></div></div>
         <div class="ai-head-actions">
           <button class="ai-icon-btn" id="aiNew" title="新建对话">✎</button>
           <button class="ai-icon-btn" id="aiClose" title="收起">—</button>
@@ -184,7 +197,7 @@ function addBubble(role, content) {
   div.className = 'ai-msg ' + (role === 'user' ? 'user' : 'assistant');
   div.innerHTML = role === 'user'
     ? `<div class="ai-bubble user">${esc(content)}</div>`
-    : `<div class="ai-avatar">🤖</div><div class="ai-bubble assistant"><div class="ai-md">${content ? renderMd(content) : '<span class="ai-typing"><i></i><i></i><i></i></span>'}</div></div>`;
+    : `<div class="ai-avatar">${AI_ICON_SVG}</div><div class="ai-bubble assistant"><div class="ai-md">${content ? renderMd(content) : '<span class="ai-typing"><i></i><i></i><i></i></span>'}</div></div>`;
   wrap.appendChild(div);
   scrollBottom();
   return div;
@@ -195,7 +208,7 @@ function render() {
   wrap.innerHTML = '';
   if (!msgs.length) {
     wrap.innerHTML = `<div class="ai-welcome">
-      <div class="ai-w-ic">🤖</div>
+      <div class="ai-w-ic">${AI_ICON_SVG}</div>
       <div class="ai-w-t">你好，我是你的 AI 财务助手</div>
       <div class="ai-w-s">可以问我会计分录、税务申报、结账流程、Excel 技巧，也可以问我工作台里的待办、票据、应收应付等数据情况。试试下面的快捷提问：</div>
     </div>`;
