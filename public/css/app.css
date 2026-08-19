@@ -565,7 +565,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; min-width
   opacity: 0; pointer-events: none;
   transition: opacity 0.25s var(--ease);
 }
-.modal-mask.show { opacity: 1; pointer-events: auto; }
+.modal-mask.show { display: flex !important; opacity: 1; pointer-events: auto; }
 .modal {
   width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto;
   background: linear-gradient(180deg, #141b38, #0d1228);

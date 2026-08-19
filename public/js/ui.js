@@ -126,8 +126,9 @@ export function openModal({ title, bodyHtml, footHtml, onMount, maxWidth }) {
     </div>
     <div class="modal-body">${bodyHtml || ''}</div>
     ${footHtml ? `<div class="modal-foot">${footHtml}</div>` : ''}`;
+  mask.classList.remove('hidden');
   mask.classList.add('show');
-  const close = () => mask.classList.remove('show');
+  const close = () => { mask.classList.remove('show'); mask.classList.add('hidden'); };
   box.querySelector('#modalClose').onclick = close;
   mask.onclick = (e) => { if (e.target === mask) close(); };
   if (onMount) onMount(box, close);
