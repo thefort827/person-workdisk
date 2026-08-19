@@ -139,9 +139,12 @@ create index if not exists idx_checkins_date on public.checkins(date);
 -- ---------- 9. CPA / 中级备考系统 ----------
 create table if not exists public.studies (
   id          uuid primary key default gen_random_uuid(),
+  subject     text not null default 'accounting',  -- 科目：accounting/auditing/tax/economic/financial/strategy
   chapter     text,
   note        text,
   minutes     integer not null default 0,       -- 学习时长（分钟）
+  difficulty  integer not null default 3,       -- 难度：1-5
+  mastery     text not null default 'learning', -- 掌握程度：learning/reviewing/mastered
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

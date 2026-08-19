@@ -906,3 +906,268 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; min-width
     width: auto; height: min(600px, calc(100vh - 100px));
   }
 }
+
+/* ============================ CPA 备考系统样式 ============================ */
+
+/* 统计面板 */
+.cpa-stats-container {
+  margin-bottom: 20px;
+}
+
+.stats-panel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.stat-icon {
+  font-size: 32px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-grad);
+  border-radius: 12px;
+  color: white;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* 统计行 */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* 科目进度面板 */
+.subject-progress-panel,
+.mastery-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.subject-progress-panel h4,
+.mastery-panel h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.subject-progress-item {
+  margin-bottom: 16px;
+}
+
+.subject-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.subject-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.subject-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.subject-minutes {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.progress-bar {
+  height: 8px;
+  background: rgba(80, 130, 120, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* 掌握程度分布 */
+.mastery-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mastery-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mastery-label {
+  width: 80px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.mastery-bar {
+  flex: 1;
+  height: 10px;
+  background: rgba(80, 130, 120, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.mastery-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+
+.mastery-count {
+  width: 100px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/* 学习记录行样式 */
+.study-row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.study-row-sub {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.subject-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mastery-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.difficulty {
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.study-note {
+  margin-top: 8px;
+  padding: 12px;
+  background: rgba(80, 130, 120, 0.05);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .stats-panel {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-panel {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .subject-progress-panel,
+  .mastery-panel {
+    padding: 16px;
+  }
+  
+  .mastery-item {
+    flex-wrap: wrap;
+  }
+  
+  .mastery-label {
+    width: 100%;
+  }
+  
+  .mastery-count {
+    width: 100%;
+    text-align: left;
+  }
+}

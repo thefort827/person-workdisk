@@ -20,7 +20,7 @@ const ENTITIES = {
   knowledge: { table: 'knowledge', cols: ['title', 'body', 'tag'] },
   todo: { table: 'todos', cols: ['text', 'priority', 'done', 'done_at'] },
   checkin: { table: 'checkins', cols: ['date', 'note'] },
-  study: { table: 'studies', cols: ['chapter', 'note', 'minutes'] },
+  study: { table: 'studies', cols: ['subject', 'chapter', 'note', 'minutes', 'difficulty', 'mastery'] },
   weekreview: { table: 'week_reviews', cols: ['content', 'week_label'] },
   monthreview: { table: 'month_reviews', cols: ['content', 'month_label'] },
   setting: { table: 'app_settings', cols: ['key', 'value'] },
