@@ -107,7 +107,7 @@ w.addEventListener('error', (e) => errors.push('window.onerror: ' + (e && e.mess
     }
 
     // 依次访问所有页面（jsdom 原生 hashchange 事件驱动，不手动派发避免双重渲染）
-    const routes = ['dashboard', 'report', 'fintodo', 'invoice', 'fund', 'close', 'tax', 'knowledge', 'study', 'checkin', 'todo', 'weekreview', 'monthreview', 'settings'];
+    const routes = ['dashboard', 'report', 'spreadsheet', 'fintodo', 'invoice', 'fund', 'close', 'tax', 'knowledge', 'study', 'checkin', 'todo', 'weekreview', 'monthreview', 'settings'];
     for (const r of routes) {
       try {
         w.location.hash = '#' + r;

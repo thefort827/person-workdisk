@@ -4,6 +4,7 @@
 
 import { dashboardPage } from './dashboard.js';
 import { reportPage } from './report.js';
+import { spreadsheetPage } from './spreadsheet.js';
 import { fintodoPage } from './fintodo.js';
 import { invoicePage } from './invoice.js';
 import { fundPage } from './fund.js';
@@ -19,6 +20,7 @@ import { settingsPage } from './settings.js';
 export const routes = {
   dashboard: dashboardPage,
   report: reportPage,
+  spreadsheet: spreadsheetPage,
   fintodo: fintodoPage,
   invoice: invoicePage,
   fund: fundPage,

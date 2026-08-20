@@ -25,3 +25,6 @@ npm-debug.log*
 scripts/.smoke-tmp/
 .npm-cache/
 scripts/node_modules/
+
+# 用户个人资料（非项目代码，含 git 子仓库）
+cpa-downloads/
