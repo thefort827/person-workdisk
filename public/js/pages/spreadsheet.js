@@ -817,7 +817,7 @@ export class Spreadsheet {
   }
 }
 
-function $(id, root) { return (root || document).getElementById(id); }
+function $(id, root) { return (root || document).querySelector('#' + id); }
 
 /* ==================== 页面入口 ==================== */
 export const spreadsheetPage = {
