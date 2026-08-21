@@ -32,6 +32,7 @@ export class Spreadsheet {
     this.root = container;
     this.hf = null;
     this.sheets = [{ name: 'Sheet1', data: [], formats: [] }];
+    this._hfIds = []; // 追踪 HyperFormula sheet IDs
     this.activeSheet = 0;
     this.selection = { row: 0, col: 0, row2: 0, col2: 0 };
     this.editing = false;
@@ -47,14 +48,16 @@ export class Spreadsheet {
   /* ---------- 初始化 ---------- */
   async init() {
     this.hf = HyperFormula.buildEmpty({ licenseKey: 'gpl-v3', language: 'enGB' });
-    this.hf.addSheet(this.sheets[0].name);
+    this._hfIds = [];
+    const added = this.hf.addSheet(this.sheets[0].name);
+    this._hfIds.push(this.hf.getSheetId(added));
     this.render();
     await this.load();
     this._mounted = true;
   }
 
   /* ---------- 数据模型 ---------- */
-  _hfSheet() { return this.activeSheet; }
+  _hfSheet() { return this._hfIds[this.activeSheet] ?? 0; }
   _ensureGrid(minR, minC) {
     const sd = this.sheets[this.activeSheet];
     if (!sd.data) sd.data = [];
@@ -102,8 +105,7 @@ export class Spreadsheet {
   /* ---------- 行列操作 ---------- */
   insertRow(afterRow) {
     this._pushUndo();
-    const s = this._hfSheet();
-    this.hf.insertRows(s, afterRow + 1, 1);
+    this.hf.addRows(this._hfSheet(), [afterRow + 1, 1]);
     const sd = this.sheets[this.activeSheet];
     sd.formats.splice(afterRow + 1, 0, Array(COLS).fill(null));
     this._renderGrid();
@@ -111,8 +113,7 @@ export class Spreadsheet {
   }
   insertCol(afterCol) {
     this._pushUndo();
-    const s = this._hfSheet();
-    this.hf.insertColumns(s, afterCol + 1, 1);
+    this.hf.addColumns(this._hfSheet(), [afterCol + 1, 1]);
     for (let r = 0; r < this.sheets[this.activeSheet].formats.length; r++) {
       this.sheets[this.activeSheet].formats[r].splice(afterCol + 1, 0, null);
     }
@@ -121,14 +122,14 @@ export class Spreadsheet {
   }
   deleteRow(row) {
     this._pushUndo();
-    this.hf.removeRows(this._hfSheet(), row, 1);
+    this.hf.removeRows(this._hfSheet(), [row, 1]);
     this.sheets[this.activeSheet].formats.splice(row, 1);
     this._renderGrid();
     this._scheduleSave();
   }
   deleteCol(col) {
     this._pushUndo();
-    this.hf.removeColumns(this._hfSheet(), col, 1);
+    this.hf.removeColumns(this._hfSheet(), [col, 1]);
     for (const row of this.sheets[this.activeSheet].formats) row.splice(col, 1);
     this._renderGrid();
     this._scheduleSave();
@@ -364,7 +365,7 @@ export class Spreadsheet {
       const name = prompt('重命名 Sheet:', this.sheets[idx].name);
       if (name && name.trim()) {
         this.sheets[idx].name = name.trim().slice(0, 31);
-        this.hf.renameSheet(idx, name.trim().slice(0, 31));
+        this.hf.renameSheet(this._hfIds[idx], name.trim().slice(0, 31));
         this._renderTabs();
         this._scheduleSave();
       }
@@ -589,19 +590,21 @@ export class Spreadsheet {
     $('ssStatus', this.root).textContent = '已重做';
   }
   _syncHF() {
-    // 完全重建 HyperFormula 与当前 sheets 同步
-    while (this.hf.getSheetIds().length > 0) this.hf.removeSheet(0);
+    // 完全重建 HyperFormula 与当前 sheets 同步（v2 API）
+    this._hfIds = [];
+    for (const name of [...this.hf.getSheetNames()]) {
+      this.hf.removeSheet(this.hf.getSheetId(name));
+    }
     this.sheets.forEach((sd) => {
-      this.hf.addSheet(sd.name);
-      const sid = this.hf.getSheetIds().length - 1;
+      const added = this.hf.addSheet(sd.name);
+      const hfId = this.hf.getSheetId(added);
+      this._hfIds.push(hfId);
       const maxR = sd.data ? sd.data.length : 0;
       const maxC = sd.data && sd.data[0] ? sd.data[0].length : 0;
       if (maxR && maxC) {
         const vals = [];
-        for (let r = 0; r < maxR; r++) {
-          vals.push(sd.data[r] || []);
-        }
-        this.hf.setCellContents({ sheet: sid, row: 0, col: 0 }, vals);
+        for (let r = 0; r < maxR; r++) vals.push(sd.data[r] || []);
+        this.hf.setCellContents({ sheet: hfId, row: 0, col: 0 }, vals);
       }
     });
   }
@@ -611,7 +614,8 @@ export class Spreadsheet {
     const n = this.sheets.length + 1;
     const name = 'Sheet' + n;
     this.sheets.push({ name, data: [], formats: [] });
-    this.hf.addSheet(name);
+    const added = this.hf.addSheet(name);
+    this._hfIds.push(this.hf.getSheetId(added));
     this._switchSheet(this.sheets.length - 1);
     this._scheduleSave();
   }
@@ -706,7 +710,7 @@ export class Spreadsheet {
         for (let c = 0; c < maxC; c++) {
           const raw = (sd.data[r] && sd.data[r][c]) || '';
           // HyperFormula 值 → 纯值
-          const val = this.hf ? this._hfGetVal(this.sheets.indexOf(sd), r, c) : raw;
+          const val = this.hf ? this._hfGetVal(this._hfIds[this.sheets.indexOf(sd)] ?? 0, r, c) : raw;
           row.push(val);
         }
         data.push(row);
@@ -727,7 +731,11 @@ export class Spreadsheet {
       try {
         const wb = XLSX.read(e.target.result, { type: 'array' });
         this.sheets = [];
-        while (this.hf.getSheetIds().length) this.hf.removeSheet(0);
+        this._hfIds = [];
+        while (this.hf.getSheetNames().length) {
+          const names = this.hf.getSheetNames();
+          this.hf.removeSheet(this.hf.getSheetId(names[names.length - 1]));
+        }
         wb.SheetNames.forEach((name) => {
           const ws = wb.Sheets[name];
           const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
@@ -740,7 +748,6 @@ export class Spreadsheet {
             const fRow = [];
             for (let c = 0; c < maxC; c++) {
               let val = (aoa[r] && aoa[r][c]) || '';
-              // 数字自动转为数字
               if (typeof val === 'number') val = String(val);
               row.push(val);
               fRow.push(null);
@@ -749,10 +756,11 @@ export class Spreadsheet {
             formats.push(fRow);
           }
           this.sheets.push({ name, data, formats });
-          this.hf.addSheet(name);
-          const sid = this.hf.getSheetIds().length - 1;
+          const added = this.hf.addSheet(name);
+          const hfId = this.hf.getSheetId(added);
+          this._hfIds.push(hfId);
           if (data.length && data[0].length) {
-            this.hf.setCellContents({ sheet: sid, row: 0, col: 0 }, data);
+            this.hf.setCellContents({ sheet: hfId, row: 0, col: 0 }, data);
           }
         });
         this.activeSheet = 0;
