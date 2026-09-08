@@ -28,3 +28,4 @@ scripts/node_modules/
 
 # 用户个人资料（非项目代码，含 git 子仓库）
 cpa-downloads/
+cpa-resources/

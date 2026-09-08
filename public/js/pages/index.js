@@ -5,6 +5,8 @@
 import { dashboardPage } from './dashboard.js';
 import { reportPage } from './report.js';
 import { spreadsheetPage } from './spreadsheet.js';
+import { aibaPage } from './aiba.js';
+import { quizPage } from './quiz.js';
 import { fintodoPage } from './fintodo.js';
 import { invoicePage } from './invoice.js';
 import { fundPage } from './fund.js';
@@ -21,6 +23,8 @@ export const routes = {
   dashboard: dashboardPage,
   report: reportPage,
   spreadsheet: spreadsheetPage,
+  aiba: aibaPage,
+  quiz: quizPage,
   fintodo: fintodoPage,
   invoice: invoicePage,
   fund: fundPage,
