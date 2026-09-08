@@ -24,6 +24,18 @@ const ENTITIES = {
   weekreview: { table: 'week_reviews', cols: ['content', 'week_label'] },
   monthreview: { table: 'month_reviews', cols: ['content', 'month_label'] },
   setting: { table: 'app_settings', cols: ['key', 'value'] },
+  // AI-BA 学习计划
+  aiba_plans: { table: 'aiba_plans', cols: ['week_num', 'week_title', 'goal', 'learning_points', 'completed', 'order_index'] },
+  aiba_tasks: { table: 'aiba_tasks', cols: ['plan_id', 'description', 'completed', 'output_doc', 'output_file_url'] },
+  aiba_weekly_reviews: { table: 'aiba_weekly_reviews', cols: ['week_num', 'review_text', 'kpis'] },
+  aiba_deliverables: { table: 'aiba_deliverables', cols: ['name', 'description', 'category', 'status', 'file_url'] },
+  aiba_templates: { table: 'aiba_templates', cols: ['name', 'category', 'content'] },
+  aiba_resources: { table: 'aiba_resources', cols: ['week_num', 'title', 'url', 'platform', 'description'] },
+  aiba_tools: { table: 'aiba_tools', cols: ['category', 'name', 'url', 'description'] },
+  aiba_pitfalls: { table: 'aiba_pitfalls', cols: ['content', 'is_warning'] },
+  aiba_job_keywords: { table: 'aiba_job_keywords', cols: ['keyword', 'category'] },
+  aiba_study_logs: { table: 'aiba_study_logs', cols: ['week_num', 'study_date', 'duration_minutes', 'description'] },
+  aiba_role_boundaries: { table: 'aiba_role_boundaries', cols: ['role_name', 'can_do', 'cannot_do'] },
 };
 
 const TABLE_NAMES = Object.values(ENTITIES).map((e) => e.table);

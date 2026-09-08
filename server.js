@@ -57,6 +57,7 @@ const ROUTES = {
   '/api/report': require('./api/report'),
   '/api/import': require('./api/import'),
   '/api/chat': require('./api/chat'),
+  '/api/aiba': require('./api/aiba'),
 };
 
 function serveStatic(res, filePath) {
