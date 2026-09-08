@@ -36,6 +36,10 @@ const ENTITIES = {
   aiba_job_keywords: { table: 'aiba_job_keywords', cols: ['keyword', 'category'] },
   aiba_study_logs: { table: 'aiba_study_logs', cols: ['week_num', 'study_date', 'duration_minutes', 'description'] },
   aiba_role_boundaries: { table: 'aiba_role_boundaries', cols: ['role_name', 'can_do', 'cannot_do'] },
+  // AI-BA 在线答题系统
+  aiba_questions: { table: 'aiba_questions', cols: ['week_num', 'question_type', 'question_text', 'options', 'correct_answer', 'explanation', 'difficulty', 'topic'] },
+  aiba_quizzes: { table: 'aiba_quizzes', cols: ['week_num', 'total_questions', 'correct_count', 'score', 'duration_sec', 'completed', 'completed_at'] },
+  aiba_quiz_answers: { table: 'aiba_quiz_answers', cols: ['quiz_id', 'question_id', 'user_answer', 'is_correct'] },
 };
 
 const TABLE_NAMES = Object.values(ENTITIES).map((e) => e.table);

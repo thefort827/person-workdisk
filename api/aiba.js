@@ -199,6 +199,155 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 201, { ok: true, data: newLog });
     }
 
+    // ============ 题库管理 & 答题系统 ============
+
+    // 13. 创建题目（出题）
+    if (action === 'question' && method === 'POST') {
+      const body = await readBody(req);
+      if (!body.question_text) return sendJson(res, 400, { ok: false, error: '缺少题目内容' });
+      if (!body.question_type || !['choice', 'judge'].includes(body.question_type)) {
+        return sendJson(res, 400, { ok: false, error: 'question_type 必须为 choice 或 judge' });
+      }
+      if (!body.correct_answer) return sendJson(res, 400, { ok: false, error: '缺少正确答案' });
+
+      // 判断题自动生成选项
+      let options = body.options;
+      if (body.question_type === 'judge') {
+        options = ['✓ 正确', '✗ 错误'];
+      }
+
+      const newQ = await insertRow('aiba_questions', {
+        week_num: body.week_num || null,
+        question_type: body.question_type,
+        question_text: body.question_text,
+        options,
+        correct_answer: body.correct_answer,
+        explanation: body.explanation || null,
+        difficulty: body.difficulty || 'medium',
+        topic: body.topic || null,
+      });
+      return sendJson(res, 201, { ok: true, data: newQ });
+    }
+
+    // 14. 获取题库（支持按周次/知识点/类型筛选）
+    if (action === 'questions' && method === 'GET') {
+      const filters = {};
+      if (q.week_num) filters.week_num = `eq.${q.week_num}`;
+      if (q.topic) filters.topic = `eq.${q.topic}`;
+      if (q.question_type) filters.question_type = `eq.${q.question_type}`;
+      const data = await listTable('aiba_questions', { filters, order: 'created_at.desc' });
+      return sendJson(res, 200, { ok: true, data });
+    }
+
+    // 15. 删除题目
+    if (action === 'question' && method === 'DELETE') {
+      if (!q.id) return sendJson(res, 400, { ok: false, error: '缺少 id' });
+      await deleteRow('aiba_questions', q.id);
+      return sendJson(res, 200, { ok: true });
+    }
+
+    // 16. 开始答题（生成试卷）
+    if (action === 'start-quiz' && method === 'POST') {
+      const body = await readBody(req);
+      const limit = Math.min(body.count || 10, 50);
+      const filters = {};
+      if (body.week_num) filters.week_num = `eq.${body.week_num}`;
+      if (body.topic) filters.topic = `eq.${body.topic}`;
+      if (body.difficulty) filters.difficulty = `eq.${body.difficulty}`;
+
+      const allQ = await listTable('aiba_questions', { filters, limit: 200 });
+      if (!allQ.length) return sendJson(res, 400, { ok: false, error: '题库为空，请先出题' });
+
+      // 随机抽题
+      const shuffled = allQ.sort(() => Math.random() - 0.5).slice(0, limit);
+      const quiz = await insertRow('aiba_quizzes', {
+        week_num: body.week_num || null,
+        total_questions: shuffled.length,
+        correct_count: 0,
+        score: 0,
+      });
+
+      return sendJson(res, 200, {
+        ok: true,
+        data: {
+          quiz,
+          questions: shuffled.map((q2) => ({
+            id: q2.id,
+            question_type: q2.question_type,
+            question_text: q2.question_text,
+            options: q2.options,
+            difficulty: q2.difficulty,
+            topic: q2.topic,
+          })),
+        },
+      });
+    }
+
+    // 17. 提交答题 & 自动评分
+    if (action === 'submit-quiz' && method === 'POST') {
+      const body = await readBody(req);
+      if (!body.quiz_id) return sendJson(res, 400, { ok: false, error: '缺少 quiz_id' });
+      if (!Array.isArray(body.answers)) return sendJson(res, 400, { ok: false, error: 'answers 必须是数组' });
+
+      // 获取题目（含正确答案）
+      const questionIds = body.answers.map((a) => a.question_id);
+      const questions = await Promise.all(
+        questionIds.map((id) =>
+          listTable('aiba_questions', { filters: { id: `eq.${id}` }, limit: 1 }).then((r) => r[0])
+        )
+      );
+
+      let correct = 0;
+      const details = [];
+
+      for (const ans of body.answers) {
+        const q2 = questions.find((x) => x && x.id === ans.question_id);
+        if (!q2) continue;
+        const isCorrect = ans.user_answer === q2.correct_answer;
+        if (isCorrect) correct++;
+
+        await insertRow('aiba_quiz_answers', {
+          quiz_id: body.quiz_id,
+          question_id: ans.question_id,
+          user_answer: ans.user_answer,
+          is_correct: isCorrect,
+        });
+
+        details.push({
+          question_id: ans.question_id,
+          question_text: q2.question_text,
+          user_answer: ans.user_answer,
+          correct_answer: q2.correct_answer,
+          is_correct: isCorrect,
+          explanation: q2.explanation,
+          options: q2.options,
+        });
+      }
+
+      const total = body.answers.length;
+      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+      // 更新 quiz 记录
+      await updateRow('aiba_quizzes', body.quiz_id, {
+        correct_count: correct,
+        score,
+        completed: true,
+        completed_at: new Date().toISOString(),
+        duration_sec: body.duration_sec || null,
+      });
+
+      return sendJson(res, 200, {
+        ok: true,
+        data: { total, correct, score, details },
+      });
+    }
+
+    // 18. 答题记录（历史）
+    if (action === 'quiz-history' && method === 'GET') {
+      const data = await listTable('aiba_quizzes', { order: 'started_at.desc', limit: 50 });
+      return sendJson(res, 200, { ok: true, data });
+    }
+
     return sendJson(res, 400, { ok: false, error: '无效的 action' });
   } catch (err) {
     return sendError(res, err);
