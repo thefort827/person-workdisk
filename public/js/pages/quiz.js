@@ -106,6 +106,7 @@ function buildQuizShell() {
         </div>
         <div class="action-bar" style="margin-top:14px">
           <button class="btn btn-primary" id="btn-save-question">💾 保存题目</button>
+          <button class="btn btn-success" id="btn-ai-generate">🤖 AI 自动出题</button>
           <button class="btn btn-outline" id="btn-clear-form">清空</button>
         </div>
       </div>
@@ -246,6 +247,10 @@ function bindEvents(container) {
   const saveBtn = container.querySelector('#btn-save-question');
   if (saveBtn) saveBtn.onclick = () => saveQuestion(container);
 
+  // AI 自动出题
+  const aiBtn = container.querySelector('#btn-ai-generate');
+  if (aiBtn) aiBtn.onclick = () => aiGenerateQuestions(container);
+
   // 清空
   const clearBtn = container.querySelector('#btn-clear-form');
   if (clearBtn) clearBtn.onclick = () => clearForm(container);
@@ -322,6 +327,31 @@ function clearForm(container) {
   container.querySelector('#q-week').value = '';
   container.querySelector('#q-options-choices').style.display = '';
   container.querySelector('#q-options-judge').style.display = 'none';
+}
+
+// ==================== AI 自动生成题库 ====================
+async function aiGenerateQuestions(container) {
+  const weekNum = container.querySelector('#q-week')?.value || null;
+  const topic = container.querySelector('#q-topic')?.value.trim() || '';
+  const btn = container.querySelector('#btn-ai-generate');
+  btn.disabled = true;
+  btn.textContent = '⏳ AI 出题中…';
+
+  try {
+    const data = await apiCall('generate-questions', 'POST', {
+      week_num: weekNum ? parseInt(weekNum) : null,
+      topic: topic || 'AI-BA 业财供应链综合',
+      count: 5,
+    });
+    toast(`🤖 AI 已生成 ${data.count} 道题目！`, 'success');
+    clearForm(container);
+    await loadQuestionBank(container);
+  } catch (err) {
+    toast('❌ ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 AI 自动出题';
+  }
 }
 
 // ==================== 题库列表 ====================

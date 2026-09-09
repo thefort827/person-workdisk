@@ -348,6 +348,89 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, { ok: true, data });
     }
 
+    // 19. AI 自动生成题库（调用 MiMo）
+    if (action === 'generate-questions' && method === 'POST') {
+      const body = await readBody(req);
+      const weekNum = body.week_num || null;
+      const topic = body.topic || 'AI-BA 业财供应链综合';
+      const count = Math.min(body.count || 5, 20);
+
+      const MIMO_KEY = (process.env.MIMO_API_KEY || '').trim();
+      if (!MIMO_KEY) {
+        return sendJson(res, 503, { ok: false, error: '未配置 MIMO_API_KEY，请在 Vercel 环境变量中设置', code: 'MIMO_NOT_CONFIGURED' });
+      }
+
+      const prompt = `你是 AI-BA（业财供应链）学习平台的出题专家。请围绕「${topic}」生成 ${count} 道练习题。
+
+要求：
+1. 混合选择题和判断题
+2. 选择题：4个选项（A/B/C/D），单选
+3. 判断题：✓ 正确 / ✗ 错误
+4. 每题给出解析
+5. 涉及财务、会计、税务、供应链、AI大模型等知识
+
+请严格按以下 JSON 数组格式输出，不要输出其他内容：
+[
+  {
+    "question_type": "choice",
+    "question_text": "题目内容",
+    "options": ["A. xxx", "B. xxx", "C. xxx", "D. xxx"],
+    "correct_answer": "A",
+    "explanation": "解析",
+    "difficulty": "easy",
+    "topic": "知识点"
+  }
+]
+
+difficulty 取值：easy / medium / hard
+question_type 取值：choice / judge（判断题 options 固定为 ["✓ 正确", "✗ 错误"]）`;
+
+      const MIMO_BASE = (process.env.MIMO_API_BASE || 'https://api.xiaomimimo.com/v1').replace(/\/+$/, '');
+      const MIMO_MODEL = process.env.MIMO_MODEL || 'mimo-v2.5';
+
+      let questions;
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 30000);
+        const aiRes = await fetch(`${MIMO_BASE}/chat/completions`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${MIMO_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: MIMO_MODEL, temperature: 0.7, max_tokens: 2000, messages: [{ role: 'user', content: prompt }] }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
+        const aiData = await aiRes.json();
+        const content = (aiData.choices && aiData.choices[0] && aiData.choices[0].message && aiData.choices[0].message.content) || '';
+
+        // 从回复中提取 JSON 数组
+        const jsonMatch = content.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) return sendJson(res, 502, { ok: false, error: 'AI 返回格式异常，请重试', code: 'PARSE_ERROR' });
+        questions = JSON.parse(jsonMatch[0]);
+      } catch (aiErr) {
+        return sendJson(res, 502, { ok: false, error: `AI 出题失败：${aiErr.message}`, code: 'AI_ERROR' });
+      }
+
+      // 存入题库
+      const saved = [];
+      for (const q of questions) {
+        try {
+          const row = await insertRow('aiba_questions', {
+            week_num: weekNum,
+            question_type: q.question_type || 'choice',
+            question_text: q.question_text || '',
+            options: q.options || null,
+            correct_answer: q.correct_answer || '',
+            explanation: q.explanation || '',
+            difficulty: q.difficulty || 'medium',
+            topic: q.topic || topic,
+          });
+          saved.push(row);
+        } catch { /* 单条失败跳过 */ }
+      }
+
+      return sendJson(res, 201, { ok: true, data: saved, count: saved.length, topic, week: weekNum });
+    }
+
     return sendJson(res, 400, { ok: false, error: '无效的 action' });
   } catch (err) {
     return sendError(res, err);
